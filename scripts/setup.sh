@@ -17,10 +17,21 @@ fi
 NODE_PATH="$(which node)"
 SERVER_PATH="$PROJECT_DIR/dist/index.js"
 
+# Prompt for auth token
+echo "To use update tools, you need an auth token from Things 3."
+echo "  Things 3 > Settings > General > Enable Things URLs"
+echo ""
+read -rp "Paste your auth token (or press Enter to skip): " AUTH_TOKEN
+echo ""
+
 # Try Claude CLI first
 if command -v claude &> /dev/null; then
   echo "Found Claude CLI. Adding MCP server..."
-  claude mcp add things3-mcp -- "$NODE_PATH" "$SERVER_PATH"
+  if [ -n "$AUTH_TOKEN" ]; then
+    claude mcp add things3-mcp --env THINGS_AUTH_TOKEN="$AUTH_TOKEN" -- "$NODE_PATH" "$SERVER_PATH"
+  else
+    claude mcp add things3-mcp -- "$NODE_PATH" "$SERVER_PATH"
+  fi
   echo "Done! things3-mcp has been added to Claude CLI."
   echo ""
 fi
@@ -31,10 +42,20 @@ if [ -d "$(dirname "$CLAUDE_DESKTOP_CONFIG")" ]; then
   echo "Claude Desktop detected. Add the following to your config at:"
   echo "  $CLAUDE_DESKTOP_CONFIG"
   echo ""
-  echo "  \"things3-mcp\": {"
-  echo "    \"command\": \"$NODE_PATH\","
-  echo "    \"args\": [\"$SERVER_PATH\"]"
-  echo "  }"
+  if [ -n "$AUTH_TOKEN" ]; then
+    echo "  \"things3-mcp\": {"
+    echo "    \"command\": \"$NODE_PATH\","
+    echo "    \"args\": [\"$SERVER_PATH\"],"
+    echo "    \"env\": {"
+    echo "      \"THINGS_AUTH_TOKEN\": \"$AUTH_TOKEN\""
+    echo "    }"
+    echo "  }"
+  else
+    echo "  \"things3-mcp\": {"
+    echo "    \"command\": \"$NODE_PATH\","
+    echo "    \"args\": [\"$SERVER_PATH\"]"
+    echo "  }"
+  fi
   echo ""
 fi
 
@@ -45,12 +66,14 @@ if ! command -v claude &> /dev/null && [ ! -d "$(dirname "$CLAUDE_DESKTOP_CONFIG
   echo "Manual setup:"
   echo "  Command: $NODE_PATH"
   echo "  Args:    $SERVER_PATH"
+  if [ -n "$AUTH_TOKEN" ]; then
+    echo "  Env:     THINGS_AUTH_TOKEN=$AUTH_TOKEN"
+  fi
   echo ""
   echo "For Claude CLI:"
-  echo "  claude mcp add things3-mcp -- $NODE_PATH $SERVER_PATH"
+  if [ -n "$AUTH_TOKEN" ]; then
+    echo "  claude mcp add things3-mcp --env THINGS_AUTH_TOKEN=$AUTH_TOKEN -- $NODE_PATH $SERVER_PATH"
+  else
+    echo "  claude mcp add things3-mcp -- $NODE_PATH $SERVER_PATH"
+  fi
 fi
-
-echo ""
-echo "To use update/update-project tools, enable Things URLs:"
-echo "  Things 3 > Settings > General > Enable Things URLs"
-echo "  Copy the auth token and provide it when using update tools."
