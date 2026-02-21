@@ -15,13 +15,22 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+const authToken = process.env.THINGS_AUTH_TOKEN;
+if (!authToken) {
+  console.error(
+    "Error: THINGS_AUTH_TOKEN environment variable is not set.\n" +
+    "Set it in your MCP server config. Find the token in Things 3 > Settings > General > Enable Things URLs."
+  );
+  process.exit(1);
+}
+
 registerAddTool(server);
 registerAddProjectTool(server);
-registerUpdateTool(server);
-registerUpdateProjectTool(server);
+registerUpdateTool(server, authToken);
+registerUpdateProjectTool(server, authToken);
 registerShowTool(server);
 registerSearchTool(server);
-registerJsonTool(server);
+registerJsonTool(server, authToken);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

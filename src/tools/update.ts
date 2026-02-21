@@ -2,13 +2,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { buildThingsUrl, openThingsUrl } from "../utils/url-scheme.js";
 
-export function registerUpdateTool(server: McpServer) {
+export function registerUpdateTool(server: McpServer, authToken: string) {
   server.tool(
     "update",
-    "Update an existing to-do in Things 3. Requires auth-token from Things Settings > General > Enable Things URLs.",
+    "Update an existing to-do in Things 3.",
     {
       id: z.string().describe("ID of the to-do to update (required)"),
-      authToken: z.string().describe("Things URL scheme auth token (required). Found in Things Settings > General > Enable Things URLs."),
       title: z.string().optional().describe("New title"),
       notes: z.string().optional().describe("Replace notes (max 10,000 chars)"),
       prependNotes: z.string().optional().describe("Text to prepend to notes"),
@@ -33,7 +32,7 @@ export function registerUpdateTool(server: McpServer) {
     },
     async (params) => {
       const url = buildThingsUrl("update", {
-        "auth-token": params.authToken,
+        "auth-token": authToken,
         id: params.id,
         title: params.title,
         notes: params.notes,

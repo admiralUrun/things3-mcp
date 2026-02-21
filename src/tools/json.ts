@@ -2,13 +2,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { buildThingsUrl, openThingsUrl } from "../utils/url-scheme.js";
 
-export function registerJsonTool(server: McpServer) {
+export function registerJsonTool(server: McpServer, authToken: string) {
   server.tool(
     "json",
     "Create or update multiple items in Things 3 using JSON. The data should be a JSON array of to-do and project objects. See Things URL Scheme docs for the JSON format.",
     {
       data: z.string().describe("JSON array of to-do/project objects. Each object needs a 'type' field ('to-do' or 'project') and 'attributes'."),
-      authToken: z.string().optional().describe("Auth token required for update operations. Found in Things Settings > General > Enable Things URLs."),
       reveal: z.boolean().optional().describe("Navigate to the first created item"),
     },
     async (params) => {
@@ -29,7 +28,7 @@ export function registerJsonTool(server: McpServer) {
 
       const url = buildThingsUrl("json", {
         data: params.data,
-        "auth-token": params.authToken,
+        "auth-token": authToken,
         reveal: params.reveal,
       });
 

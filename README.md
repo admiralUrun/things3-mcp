@@ -26,7 +26,7 @@ Run the setup script to configure Claude CLI or Claude Desktop:
 Or manually add to Claude CLI:
 
 ```bash
-claude mcp add things3-mcp -- node /path/to/things3-mcp/dist/index.js
+claude mcp add things3-mcp --env THINGS_AUTH_TOKEN=your-token -- node /path/to/things3-mcp/dist/index.js
 ```
 
 Or add to Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
@@ -36,11 +36,23 @@ Or add to Claude Desktop config (`~/Library/Application Support/Claude/claude_de
   "mcpServers": {
     "things3-mcp": {
       "command": "node",
-      "args": ["/path/to/things3-mcp/dist/index.js"]
+      "args": ["/path/to/things3-mcp/dist/index.js"],
+      "env": {
+        "THINGS_AUTH_TOKEN": "your-token"
+      }
     }
   }
 }
 ```
+
+## Auth Token
+
+The server requires the `THINGS_AUTH_TOKEN` environment variable to be set. Without it, the server will not start.
+
+1. Open Things 3
+2. Go to **Settings > General > Enable Things URLs**
+3. Copy the auth token
+4. Set it as `THINGS_AUTH_TOKEN` in your MCP server config (see setup examples above)
 
 ## Tools
 
@@ -51,10 +63,10 @@ Create a new to-do. Params: `title`, `notes`, `when`, `deadline`, `tags`, `check
 Create a new project. Params: `title`, `notes`, `when`, `deadline`, `tags`, `area`, `todos`, `reveal`, etc.
 
 ### `update`
-Update an existing to-do. Requires `id` and `authToken`. Params: `title`, `notes`, `when`, `deadline`, `tags`, `addTags`, `completed`, `canceled`, etc.
+Update an existing to-do. Requires `id`. Params: `title`, `notes`, `when`, `deadline`, `tags`, `addTags`, `completed`, `canceled`, etc.
 
 ### `update-project`
-Update an existing project. Requires `id` and `authToken`. Params: `title`, `notes`, `when`, `deadline`, `tags`, `area`, `completed`, `canceled`, etc.
+Update an existing project. Requires `id`. Params: `title`, `notes`, `when`, `deadline`, `tags`, `area`, `completed`, `canceled`, etc.
 
 ### `show`
 Show and return items from Things. Use list names (`inbox`, `today`, `anytime`, `upcoming`, `someday`, `logbook`), `all-projects`, or a specific item ID. Returns data to the LLM via AppleScript.
@@ -63,16 +75,7 @@ Show and return items from Things. Use list names (`inbox`, `today`, `anytime`, 
 Search to-dos by name. Returns matching items with details (id, status, notes, tags, due date, project).
 
 ### `json`
-Advanced bulk creation/update using Things JSON format. Params: `data` (JSON array), `authToken` (for updates), `reveal`.
-
-## Auth Token
-
-The `update`, `update-project`, and `json` (for updates) tools require an auth token:
-
-1. Open Things 3
-2. Go to **Settings > General > Enable Things URLs**
-3. Copy the auth token
-4. Provide it as the `authToken` parameter when using these tools
+Advanced bulk creation/update using Things JSON format. Params: `data` (JSON array), `reveal`.
 
 ## Testing
 
