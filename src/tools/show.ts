@@ -4,7 +4,7 @@ import { getTodos, getProjects, getTodoById } from "../utils/applescript.js";
 import { buildThingsUrl, openThingsUrl } from "../utils/url-scheme.js";
 import type { TodoItem, ProjectItem } from "../utils/types.js";
 
-const BUILT_IN_LISTS = [
+const BUILT_IN_LISTS: readonly string[] = [
   "inbox",
   "today",
   "anytime",
@@ -12,7 +12,7 @@ const BUILT_IN_LISTS = [
   "someday",
   "logbook",
   "all-projects",
-] as const;
+];
 
 function formatTodos(todos: TodoItem[]): string {
   if (todos.length === 0) return "No to-dos found.";
@@ -58,7 +58,7 @@ export function registerShowTool(server: McpServer) {
       const normalizedTarget = target.toLowerCase();
 
       // Try built-in lists first
-      if ((BUILT_IN_LISTS as readonly string[]).includes(normalizedTarget)) {
+      if (BUILT_IN_LISTS.includes(normalizedTarget)) {
         const todos = await getTodos(normalizedTarget);
         const filtered = params.filter ? filterByTags(todos, params.filter) : todos;
 
