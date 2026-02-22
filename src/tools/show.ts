@@ -11,7 +11,8 @@ const BUILT_IN_LISTS = [
   "upcoming",
   "someday",
   "logbook",
-];
+  "all-projects",
+] as const;
 
 function formatTodos(todos: TodoItem[]): string {
   if (todos.length === 0) return "No to-dos found.";
@@ -44,18 +45,20 @@ function formatProjects(projects: ProjectItem[]): string {
 export function registerShowTool(server: McpServer) {
   server.tool(
     "show",
-    "Show and return items from Things 3. Use list names (inbox, today, anytime, upcoming, someday, logbook), 'all-projects' for projects, or a specific item ID.",
+    "Show and return items from Things 3. Pick a built-in list, provide a specific item ID, or search by name.",
     {
-      id: z.string().optional().describe("A list name (inbox, today, anytime, upcoming, someday, logbook), 'all-projects', or a specific to-do/project ID"),
-      query: z.string().optional().describe("Name of an area, project, tag, or built-in list to show (ignored if id is set)"),
+      list: z.enum(["inbox", "today", "anytime", "upcoming", "someday", "logbook", "all-projects"]).optional().describe("A predefined Things list to show. Defaults to 'today'."),
+      id: z.string().optional().describe("A specific to-do or project ID. Takes precedence over list."),
+      query: z.string().optional().describe("Name of an area, project, or tag to open (ignored if id or list is set)"),
       filter: z.string().optional().describe("Comma-separated tag names to filter by"),
     },
     async (params) => {
-      const target = params.id ?? params.query ?? "today";
+      // id takes precedence, then list, then query, then default to "today"
+      const target = params.id ?? params.list ?? params.query ?? "today";
       const normalizedTarget = target.toLowerCase();
 
       // Try built-in lists first
-      if (BUILT_IN_LISTS.includes(normalizedTarget)) {
+      if ((BUILT_IN_LISTS as readonly string[]).includes(normalizedTarget)) {
         const todos = await getTodos(normalizedTarget);
         const filtered = params.filter ? filterByTags(todos, params.filter) : todos;
 
