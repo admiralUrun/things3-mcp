@@ -12,6 +12,10 @@ import { registerJsonTool } from "./tools/json.js";
 import { registerDeleteTool } from "./tools/delete.js";
 import { registerGetSelectedTool } from "./tools/get-selected.js";
 import { registerManageAreasTool } from "./tools/manage-areas.js";
+import { registerDailyReviewPrompt } from "./prompts/daily-review.js";
+import { registerPlanMyDayPrompt } from "./prompts/plan-my-day.js";
+import { registerWeeklyCleanupPrompt } from "./prompts/weekly-cleanup.js";
+import { registerPlanProjectPrompt } from "./prompts/plan-project.js";
 
 const server = new McpServer({
   name: "things3-mcp",
@@ -37,6 +41,11 @@ registerJsonTool(server, authToken);
 registerDeleteTool(server);
 registerGetSelectedTool(server);
 registerManageAreasTool(server);
+
+registerDailyReviewPrompt(server);
+registerPlanMyDayPrompt(server);
+registerWeeklyCleanupPrompt(server);
+registerPlanProjectPrompt(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

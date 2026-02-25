@@ -86,6 +86,22 @@ Manage areas: list all, create, or delete. Params: `action` (`list`, `create`, `
 ### `json`
 Advanced bulk creation/update using Things JSON format. Params: `data` (JSON array), `reveal`.
 
+## Prompts
+
+Pre-built conversation starters that fetch your real Things 3 data and guide the LLM through common productivity workflows.
+
+### `daily-review`
+Review today's to-dos and get help prioritizing, rescheduling, or cleaning up. No arguments.
+
+### `plan-my-day`
+Look at inbox, today, and upcoming items to help plan and schedule your day. No arguments.
+
+### `weekly-cleanup`
+Review completed items and stale to-dos, and suggest archiving, rescheduling, or deleting. No arguments.
+
+### `plan-project`
+Break down a goal or topic into a Things 3 project with actionable to-dos. Argument: `goal` (required) — the goal or topic to plan around.
+
 ## Testing
 
 Test with MCP Inspector:
