@@ -9,6 +9,9 @@ import { registerUpdateProjectTool } from "./tools/update-project.js";
 import { registerShowTool } from "./tools/show.js";
 import { registerSearchTool } from "./tools/search.js";
 import { registerJsonTool } from "./tools/json.js";
+import { registerDeleteTool } from "./tools/delete.js";
+import { registerGetSelectedTool } from "./tools/get-selected.js";
+import { registerManageAreasTool } from "./tools/manage-areas.js";
 
 const server = new McpServer({
   name: "things3-mcp",
@@ -31,6 +34,9 @@ registerUpdateProjectTool(server, authToken);
 registerShowTool(server);
 registerSearchTool(server);
 registerJsonTool(server, authToken);
+registerDeleteTool(server);
+registerGetSelectedTool(server);
+registerManageAreasTool(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

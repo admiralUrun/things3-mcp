@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import type { TodoItem, ProjectItem } from "./types.js";
+import type { TodoItem, ProjectItem, AreaItem } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -237,4 +237,134 @@ end tell`;
     dueDate: fields[5] ?? "",
     project: fields[6] ?? "",
   };
+}
+
+export async function deleteItem(id: string): Promise<string> {
+  const escaped = id.replace(/"/g, '\\"');
+  const script = `
+tell application "Things3"
+  try
+    set t to to do id "${escaped}"
+    set tname to name of t
+    delete t
+    return "to-do" & "${FIELD_DELIMITER}" & tname
+  on error
+    try
+      set p to project id "${escaped}"
+      set pname to name of p
+      delete p
+      return "project" & "${FIELD_DELIMITER}" & pname
+    on error
+      return ""
+    end try
+  end try
+end tell`;
+
+  const raw = await runAppleScript(script);
+  if (!raw) {
+    throw new Error(`No to-do or project found with ID: ${id}`);
+  }
+  const parts = raw.split(FIELD_DELIMITER);
+  return `Deleted ${parts[0]} "${parts[1]}" (${id}) — moved to Trash.`;
+}
+
+export async function getSelectedTodos(): Promise<TodoItem[]> {
+  const script = `
+tell application "Things3"
+  set output to ""
+  repeat with t in selected to dos
+    set tid to id of t
+    set tname to name of t
+    set tstatus to status of t
+    set tnotes to notes of t
+    set tdue to due date of t
+    set ttags to ""
+    repeat with tg in tags of t
+      if ttags is not "" then set ttags to ttags & ","
+      set ttags to ttags & name of tg
+    end repeat
+    set tproject to ""
+    try
+      set tproject to name of project of t
+    end try
+    if tstatus is open then
+      set stext to "open"
+    else if tstatus is completed then
+      set stext to "completed"
+    else if tstatus is canceled then
+      set stext to "canceled"
+    else
+      set stext to tstatus as text
+    end if
+    set dtext to ""
+    if tdue is not missing value then
+      set dtext to tdue as text
+    end if
+    set output to output & tid & "${FIELD_DELIMITER}" & tname & "${FIELD_DELIMITER}" & stext & "${FIELD_DELIMITER}" & tnotes & "${FIELD_DELIMITER}" & ttags & "${FIELD_DELIMITER}" & dtext & "${FIELD_DELIMITER}" & tproject & "${RECORD_DELIMITER}"
+  end repeat
+  return output
+end tell`;
+
+  const raw = await runAppleScript(script);
+  return parseTodoRecords(raw);
+}
+
+function parseAreaRecords(raw: string): AreaItem[] {
+  if (!raw) return [];
+  return raw.split(RECORD_DELIMITER).filter(Boolean).map((record) => {
+    const fields = record.split(FIELD_DELIMITER);
+    return {
+      id: fields[0] ?? "",
+      name: fields[1] ?? "",
+      tags: (fields[2] ?? "").split(",").filter(Boolean),
+    };
+  });
+}
+
+export async function getAreas(): Promise<AreaItem[]> {
+  const script = `
+tell application "Things3"
+  set output to ""
+  repeat with a in areas
+    set aid to id of a
+    set aname to name of a
+    set atags to ""
+    repeat with tg in tags of a
+      if atags is not "" then set atags to atags & ","
+      set atags to atags & name of tg
+    end repeat
+    set output to output & aid & "${FIELD_DELIMITER}" & aname & "${FIELD_DELIMITER}" & atags & "${RECORD_DELIMITER}"
+  end repeat
+  return output
+end tell`;
+
+  const raw = await runAppleScript(script);
+  return parseAreaRecords(raw);
+}
+
+export async function createArea(name: string, tags?: string): Promise<string> {
+  const escapedName = name.replace(/"/g, '\\"');
+  let props = `name:"${escapedName}"`;
+  if (tags) {
+    const escapedTags = tags.replace(/"/g, '\\"');
+    props += `, tag names:"${escapedTags}"`;
+  }
+  const script = `
+tell application "Things3"
+  set a to make new area with properties {${props}}
+  return id of a
+end tell`;
+
+  const id = await runAppleScript(script);
+  return id;
+}
+
+export async function deleteArea(name: string): Promise<void> {
+  const escapedName = name.replace(/"/g, '\\"');
+  const script = `
+tell application "Things3"
+  delete area "${escapedName}"
+end tell`;
+
+  await runAppleScript(script);
 }

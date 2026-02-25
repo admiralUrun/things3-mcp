@@ -74,6 +74,15 @@ Show and return items from Things. Use list names (`inbox`, `today`, `anytime`, 
 ### `search`
 Search to-dos by name. Returns matching items with details (id, status, notes, tags, due date, project).
 
+### `delete`
+Delete a to-do or project (moves to Trash). Params: `id`.
+
+### `get-selected`
+Get the currently selected to-dos in the Things 3 UI. No params.
+
+### `manage-areas`
+Manage areas: list all, create, or delete. Params: `action` (`list`, `create`, `delete`), `name` (for create/delete), `tags` (for create).
+
 ### `json`
 Advanced bulk creation/update using Things JSON format. Params: `data` (JSON array), `reveal`.
 
